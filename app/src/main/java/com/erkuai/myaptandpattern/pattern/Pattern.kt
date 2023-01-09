@@ -1,6 +1,7 @@
 package com.erkuai.myaptandpattern.pattern
 
-import java.util.Objects
+import java.io.Serializable
+
 
 class Pattern {
 
@@ -11,6 +12,8 @@ class Pattern {
         wrapper.instance = "111"
     }
 }
+
+/************泛型的创建*****************/
 
 //1
 class Wrapper<T> {
@@ -79,7 +82,63 @@ class ApplePlusShop<M, N : Apple> : Shop<M> { // 这里N 还限制了类型
     }
 }
 
+/************泛型的实例化*****************/
 
+interface Fruit
+
+class Orange : Fruit
+
+class Banana : Fruit
+
+val fruits: ArrayList<out Fruit> = ArrayList<Orange>() // <? extends Fruit> 读
+val fruits1: ArrayList<in Orange> = ArrayList<Fruit>() // <? super Fruit> 写
+
+/************泛型方法和类型推断*****************/
+
+interface RecycleShop<M> : Shop<M> {
+
+    fun <E> recycle(item: E): List<M> // 回收E，返回M的列表；不在类名后声明，使得方法接收的参数更灵活
+    fun <E> recycle(item: E): List<M> where E : Serializable, E : Apple // 泛型的多重约束，where关键字连接，不管是类or方法，都写在最后
+
+}
+
+/**
+ * 泛型的主要作用在于 类型检查和自动转型
+ *
+ * 类型推断：泛型在实例化的时候，程序可以自动推断出类型参数的实际类型，从而不用手动指明类型
+ *  泛型实例化，就是把泛型确定类型
+ *
+ * 泛型方法：方法自己声明了属于自己的泛型参数
+ */
+
+/************泛型到底什么情况下使用*****************/
+
+/**
+ * 类型检查和自动转型
+ *
+ * 类型约束
+ *  多重限制的场景下，Java使用 &，Kotlin使用 where 关键字
+ */
+
+/************T <> ? extends super，位置/写法*****************/
+
+/**
+ * T
+ *  类名/接口名 的右边，表示声明
+ *  在类名/接口内部（方法的返回值、参数类型、成员变量（接口里面不行，因为接口的成员变量都是static final的））使用
+ *  方法开头
+ *
+ * <>
+ *  只是对类型包裹
+ *
+ * ？
+ *  扩展 Type Argument 的范围
+ *
+ *
+ *
+ * Parameter 形参
+ * Argument 实参
+ */
 
 
 
