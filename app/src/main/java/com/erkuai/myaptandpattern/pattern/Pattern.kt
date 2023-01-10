@@ -1,6 +1,9 @@
 package com.erkuai.myaptandpattern.pattern
 
+import com.google.gson.reflect.TypeToken
 import java.io.Serializable
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 
 class Pattern {
@@ -90,8 +93,11 @@ class Orange : Fruit
 
 class Banana : Fruit
 
-val fruits: ArrayList<out Fruit> = ArrayList<Orange>() // <? extends Fruit> 读
-val fruits1: ArrayList<in Orange> = ArrayList<Fruit>() // <? super Fruit> 写
+val fruits: ArrayList<out Fruit> = ArrayList<Orange>() // <? extends Fruit> 读，使用的是返回值，covariant，协变
+val fruits1: ArrayList<in Orange> = ArrayList<Fruit>() // <? super Fruit> 写，使用的时候参数值，contravariant，逆变
+// Producer extends，Consumer super
+
+// 数组没有类型擦除
 
 /************泛型方法和类型推断*****************/
 
@@ -141,5 +147,42 @@ interface RecycleShop<M> : Shop<M> {
  */
 
 
+/************泛型中的重复和嵌套*****************/
+
+/**
+ * eg：
+ *  Enum类
+ */
 
 
+/************类型擦除*****************/
+
+/**
+ * 在运行时，拿不到类型，是个Object
+ *
+ *
+ */
+
+fun testGson() {
+    val typeToken = object : TypeToken<List<Apple>>() {}
+    val rawType = typeToken.rawType // Class<in List<Apple>>
+
+    // Gson 能拿到泛型信息的原理是 创建了子类,通过反射拿到的
+    // 类型信息只是在运行时被擦除了，但是在class字节码中是存在的
+    // java -p Test.java 看class字节码
+    // 运行时没有，class字节码中有，可以通过反射来看泛型信息
+    val field: Field? = null
+    field?.type // List<String> -> List
+    field?.genericType // List<String> -> List<String>
+
+    val method: Method? = null
+    method?.genericReturnType // 获得方法的返回值类型
+    method?.genericParameterTypes // 获得方法的参数类型
+
+    // 但是得创建子类才能获取到，因为反射获取的是类型本身的信息，而不是对象的信息
+    // 比如List，不创建子类，它获取到的是List，创建子类，它获取到的才是List<String>
+    val list1: List<String> = ArrayList<String>() // 不可以获取到
+    val list2: List<String> = object : ArrayList<String>() {} // 可以获取到，这里是匿名类
+    // 要么像list2这样写，要么使用Gson，
+
+}

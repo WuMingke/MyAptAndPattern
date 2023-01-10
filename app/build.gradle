@@ -45,4 +45,10 @@ dependencies {
     implementation(project(":lib-reflection"))
     annotationProcessor(project(":lib-_processor"))
 
+    implementation 'com.google.code.gson:gson:2.8.9'
+
+    compileOnly 'com.android.tools.build:gradle:7.1.0-alpha03' // 导入构建的Task源码
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.0'
 }
