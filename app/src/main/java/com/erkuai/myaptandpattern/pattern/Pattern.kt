@@ -17,9 +17,16 @@ class Pattern {
 }
 
 /************泛型的创建*****************/
+/**
+ * 泛型的作用：
+ * 1 帮助检查代码中的类型，提前报错
+ * 2 自动强制转型
+ *
+ * 创建泛型类型的目的：本质目标或原因：这个类型的不同实例的具体类型可能会有不同，针对的是实例
+ */
 
-//1
-class Wrapper<T> {
+//1 泛型类
+class Wrapper<T> { // 创建泛型，在类名右边尖括号
     var instance: T? = null
 
     // 不能有static修饰的变量、方法，因为泛型类型是针对具体的对象的，不针对静态对象和静态方法，静态对象和静态方法也根本取不到类型
@@ -27,7 +34,7 @@ class Wrapper<T> {
 
 }
 
-//2
+//2 泛型接口
 interface Shop<T> {
     fun buy(): T?
     fun refund(item: T): Float
@@ -46,10 +53,12 @@ class AppleShop : Shop<Apple> { // 这里已经实例化了泛型
 
 }
 
-interface RepairableShop<M> : Shop<M> { // 保留泛型信息
+// 这里是声明  //这里是实例化
+interface RepairableShop<M> : Shop<M> { // 保留泛型信息,
     fun repair(item: M)
 }
 
+// 扩展原来的功能
 class AppleRepairableShop : RepairableShop<Apple> {
     override fun buy(): Apple? {
         return null
@@ -68,9 +77,14 @@ class MyHashMap<K, V> {
     fun put(key: K, value: V) {
 
     }
+
+    fun get(key: K): V? {
+        return null
+    }
 }
 
 // 给已有类型增加泛型
+// N : Apple =》 类型参数的上界 <T extends XXX>
 class ApplePlusShop<M, N : Apple> : Shop<M> { // 这里N 还限制了类型
     override fun buy(): M? {
         return null
@@ -93,18 +107,24 @@ class Orange : Fruit
 
 class Banana : Fruit
 
-val fruits: ArrayList<out Fruit> = ArrayList<Orange>() // <? extends Fruit> 读，使用的是返回值，covariant，协变
-val fruits1: ArrayList<in Orange> = ArrayList<Fruit>() // <? super Fruit> 写，使用的时候参数值，contravariant，逆变
+val fruits: ArrayList<out Fruit> = ArrayList<Orange>() // <? extends Fruit> 只读，使用的是返回值，covariant，协变
+val fruits1: ArrayList<in Orange> = ArrayList<Fruit>() // <? super Fruit> 只写，使用的是参数值，contravariant，逆变
 // Producer extends，Consumer super
 
-// 数组没有类型擦除
+// List有类型擦除，数组没有类型擦除
+// List不能协变，Java数组支持协变，但是运行会报错，Kotlin数组直接不支持协变
+//val fruitsArray: Array<Fruit> = arrayOf<Orange>() // 报错
+// 逆变，两种语言都不直接支持，需要加super/in
 
-/************泛型方法和类型推断*****************/
+/************ 泛型方法 和类型推断*****************/
+/**
+ * 泛型方法：自己声明泛型的方法
+ */
 
-interface RecycleShop<M> : Shop<M> {
+interface RecycleShop<M, C> : Shop<M> where C : Serializable, C : Apple {
 
     fun <E> recycle(item: E): List<M> // 回收E，返回M的列表；不在类名后声明，使得方法接收的参数更灵活
-    fun <E> recycle(item: E): List<M> where E : Serializable, E : Apple // 泛型的多重约束，where关键字连接，不管是类or方法，都写在最后
+    fun <E> recycle(item: E): List<M> where E : Serializable, E : Apple // 泛型的多重约束，where关键字连接，不管是类or方法，都写在最后，如C
 
 }
 
@@ -157,9 +177,34 @@ interface RecycleShop<M> : Shop<M> {
 
 /************类型擦除*****************/
 
+class AppleShop2 : Shop<Apple> {
+    override fun buy(): Apple? {
+        return null
+    }
+
+    override fun refund(item: Apple): Float {
+        return 0f
+    }
+    // 编译后会生成桥接方法
+    // 1、当返回值是泛型类型的时候，会发生强转 (T)Object
+    // 2、当参数是泛型类型的时候，强转后，调用对应的方法
+    // 模拟生成的桥接方法
+//    public float refund(Object var1) {
+//        return this.refund((Apple)var1);
+//    }
+
+}
+
 /**
  * 在运行时，拿不到类型，是个Object
+ * 泛型擦除，解决的是Java的兼容性问题，旧版的Java没有泛型
  *
+ * List 和 List<String> 以及 List<Integer> 都是一个类型  ==》 List
+ * 1 所有代码中声明的变量或参数或类或接口，在运行时可以通过反射获取到泛型信息；
+ * 2 运行时创建的对象，在运行时通过反射获取不到泛型信息（因为class 文件里面没有）；
+ * 3 有个绕弯的方法就是创建一个子类（哪怕用匿名类也行），用这个子类来生成对象，
+ *  这样由于子类在 class 文件里就有，所以可以通过反射拿到运行时创建的对象的泛型信息。
+ *  比如 Gson 的 TypeToken 就是这么干的。
  *
  */
 
